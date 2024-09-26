@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Date, ForeignKey, Integer, create_engine
 from sqlalchemy.orm import relationship
 
-from DB.session import get_session, Base
+from db import get_session, Base
 
 class User(Base):
     __tablename__ = "users"

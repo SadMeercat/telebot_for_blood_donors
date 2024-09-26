@@ -1,6 +1,6 @@
 from sqlalchemy import Column, ForeignKey, Integer, String, func, select
 from sqlalchemy.orm import relationship
-from DB.session import get_session, Base
+from db.session import get_session, Base
 
 class Hospital(Base):
     __tablename__ = "hospitals"

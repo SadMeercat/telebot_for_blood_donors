@@ -1,8 +1,8 @@
-from sqlalchemy import Column, Integer, String, func
+from sqlalchemy import Column, Integer, String, func, select
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
-from DB.session import get_session, Base
+from db.session import get_session, Base
 
 class City(Base):
     __tablename__ = "cities"

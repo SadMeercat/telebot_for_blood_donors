@@ -1,7 +1,10 @@
 from telebot import main
-from DB.createDB import createDB
+from db import create_database
+from db import find_similar_region
 
 
 if __name__ == "__main__":
     #createDB()
-    main()
+    #main()
+    #print(find_similar_region("ччнская рес"))
+    pass

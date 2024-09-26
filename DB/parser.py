@@ -3,11 +3,6 @@ from tqdm import tqdm
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 
-from models.region_model import get_or_create_region
-from models.city_model import get_or_create_city
-from models.district_model import get_or_create_district
-from models.hospital_model import add_hospital
-
 def get_hospitals_data() -> list:
     url = "https://yadonor.ru/donorstvo/gde-sdat/where/"
     home_url = "https://yadonor.ru"
