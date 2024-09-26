@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine
-from prepDB import hospital_controlDB, parser, schemas
+from DB import parser, schemas
+from controllers import hospital_controlDB
 import os
 
 def createDB():
