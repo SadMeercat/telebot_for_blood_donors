@@ -1,10 +1,14 @@
 import requests
+from tqdm import tqdm
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
-from prepDB.schemas import Hospital
 
+from models.region_model import get_or_create_region
+from models.city_model import get_or_create_city
+from models.district_model import get_or_create_district
+from models.hospital_model import add_hospital
 
-def get_data():
+def get_hospitals_data() -> list:
     url = "https://yadonor.ru/donorstvo/gde-sdat/where/"
     home_url = "https://yadonor.ru"
 
@@ -32,7 +36,7 @@ def get_data():
         links = div_block.find_all('a')
         hospitals = []
 
-        for link in links:
+        for link in tqdm(links, desc="Прасинг ссылок", ncols=100):
             tmp_hospital = {}
             tmp_hospital["name"] = link.get_text()
             tmp_hospital["url_address"] = home_url + link.get("href")
@@ -64,9 +68,3 @@ def get_data():
                     break
             hospitals.append(tmp_hospital)
     return hospitals
-            
-
-
-
-if __name__ == "__main__":
-    get_data()

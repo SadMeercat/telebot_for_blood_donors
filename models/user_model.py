@@ -1,16 +1,23 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from prepDB.schemas import User
+from sqlalchemy import Column, Date, ForeignKey, Integer, create_engine
+from sqlalchemy.orm import relationship
 
-engine = create_engine("sqlite:///data.db")
-Session = sessionmaker(bind=engine)
-session = Session()
+from DB.session import get_session, Base
+
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True)
+    telegram_id = Column(Integer, nullable=False)
+    hospital_id = Column(Integer, ForeignKey("hospitals.id"))
+    last_donation = Column(Date())
+
+    hospital = relationship("Hospital", back_populates="user")
 
 def add_user_to_db(user):
     """
     Записывает пользователя в базу данных.
     :param user: Словарь данных о пользователе
     """
+    session = next(get_session())
     new_user = User(
         telegram_id=user['tg_id'],
         hospital_id=user['hospital_id'],
@@ -26,6 +33,7 @@ def update_user_data(telegram_id, new_hospital_id=None, new_last_donation=None):
     :param new_hospital_id: Новый ID больницы (опционально).
     :param new_last_donation: Новая дата последнего визита (опционально).
     """
+    session = next(get_session())
     # Находим пользователя по его telegram_id
     user = session.query(User).filter_by(telegram_id=telegram_id).first()
     
