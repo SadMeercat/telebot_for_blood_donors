@@ -1,9 +1,7 @@
-from db import parser
 from models.hospital_model import add_hospital
 from models.region_model import get_or_create_region
 from models.city_model import get_or_create_city
 from models.district_model import get_or_create_district
-
 
 def fill_in_hospital_data(hospitals):
     for hospital in hospitals:

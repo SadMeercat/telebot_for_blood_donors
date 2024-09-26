@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Date, ForeignKey, Integer, create_engine
 from sqlalchemy.orm import relationship
 
-from db import get_session, Base
+from db.session import get_session, Base
 
 class User(Base):
     __tablename__ = "users"
@@ -10,20 +10,21 @@ class User(Base):
     hospital_id = Column(Integer, ForeignKey("hospitals.id"))
     last_donation = Column(Date())
 
-    hospital = relationship("Hospital", back_populates="user")
+    hospital = relationship("Hospital", back_populates="users")
 
-def add_user_to_db(user):
+def add_user_to_db(user: User):
     """
     Записывает пользователя в базу данных.
     :param user: Словарь данных о пользователе
     """
     session = next(get_session())
     new_user = User(
-        telegram_id=user['tg_id'],
-        hospital_id=user['hospital_id'],
+        telegram_id=user.telegram_id,
+        hospital_id=user.hospital_id,
         last_donation=None
     )
     session.add(new_user)
+    session.commit()
 
 def update_user_data(telegram_id, new_hospital_id=None, new_last_donation=None):
     """

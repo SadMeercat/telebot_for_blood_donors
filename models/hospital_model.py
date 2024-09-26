@@ -12,10 +12,10 @@ class Hospital(Base):
     address = Column(String(100))
     url_address = Column(String(100))
 
-    user = relationship("User", back_populates="hospital")
-    region = relationship("Region", back_populates="hospital")
-    city = relationship("City", back_populates="hospital")
-    district = relationship("District", back_populates="hospital")
+    users = relationship("User", back_populates="hospital")
+    region = relationship("Region", back_populates="hospitals")
+    city = relationship("City", back_populates="hospitals")
+    district = relationship("District", back_populates="hospitals")
 
 def add_hospital(name, region_id, city_id, district_id, address, url_address):
     session = next(get_session())
@@ -42,6 +42,18 @@ def add_hospital(name, region_id, city_id, district_id, address, url_address):
         session.add(hospital)
         session.commit()
 
+def get_hospital_id(region_id, city_id, district_id, name=None):
+    session = next(get_session())
+    if not name:
+        stmt = select(Hospital.id, Hospital.name).where(Hospital.region_id == region_id, 
+                                                    Hospital.city_id == city_id, Hospital.district_id == district_id)
+        hospitals = session.execute(stmt).all()
+    else:
+        stmt = select(Hospital.id).where(Hospital.region_id == region_id, 
+                                                    Hospital.city_id == city_id, Hospital.district_id == district_id,
+                                                    Hospital.name == name)
+        hospitals = session.execute(stmt).first()
+    return hospitals
 # # Функция для получения существующих регионов
 # def get_existing_regions():
 #     session = next(get_session())

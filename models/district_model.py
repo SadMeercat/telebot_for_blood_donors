@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, func, select
 from sqlalchemy.orm import relationship
 
+
 from db.session import get_session, Base
 
 class District(Base):
@@ -8,7 +9,7 @@ class District(Base):
     id = Column(Integer, primary_key=True)
     district_name = Column(String(100), nullable=False)
 
-    hospital = relationship("Hospital", back_populates="district")
+    hospitals = relationship("Hospital", back_populates="district")
 
 def get_or_create_district(district_name:str):
     session = next(get_session())
@@ -18,3 +19,17 @@ def get_or_create_district(district_name:str):
         session.add(district)
         session.commit()
     return district
+
+def get_district_id(district_name):
+    session = next(get_session())
+    stmt = select(District.id).where(func.lower(District.district_name) == func.lower(district_name))
+    district_id = session.execute(stmt).first()
+    if not district_id:
+        from db import find_similar_district
+        possible_cities = find_similar_district(district_name)
+        if len(possible_cities) > 0:
+            return False, possible_cities
+        else:
+            return False, None
+    else:
+        return True, district_id.id
