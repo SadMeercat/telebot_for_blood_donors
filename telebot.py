@@ -6,7 +6,6 @@ from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, Messa
 from models.city_model import get_city_id
 from models.district_model import get_district_id
 from models.hospital_model import get_hospital_id
-from models.region_model import get_region_id
 from models.user_model import User, add_user_to_db
 
 EMPTY, REGION, CITY, DISTRICT, HOSPITAL = range(5)
@@ -28,21 +27,8 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     # Просим ввести регион
     await query.message.reply_text("Введите ваш регион:")
-    return CITY
-    
-# Получаем регион
-async def get_region(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    region = update.message.text
-    found_reg, result = get_region_id(region)
-    if not found_reg:
-        if result:
-            await update.message.reply_text(f"Некорректный ввод. Возможно Вы имели ввиду:\r\n {'\r\n'.join(result)}")
-        else:
-            await update.message.reply_text(f"Некорректный ввод. Ничего похожего не найдено")
-        return CITY
-    context.user_data['region'] = result
-    await update.message.reply_text(f"Ваш регион: {region}. Введите ваш город:")
     return DISTRICT
+    
 
 # Получаем город
 async def get_city(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -111,7 +97,6 @@ def main():
         entry_points=[CommandHandler('start', start)],
         states={
             REGION: [CallbackQueryHandler(button_callback, pattern='choose_hospital')],
-            CITY: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_region)],
             DISTRICT: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_city)],
             EMPTY: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_district)],
             HOSPITAL: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_hospital)]

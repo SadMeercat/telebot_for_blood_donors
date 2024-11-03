@@ -1,7 +1,12 @@
+import re
 import requests
 from tqdm import tqdm
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 def get_hospitals_data() -> list:
     url = "https://yadonor.ru/donorstvo/gde-sdat/where/"
@@ -36,7 +41,7 @@ def get_hospitals_data() -> list:
             tmp_hospital["name"] = link.get_text()
             tmp_hospital["url_address"] = home_url + link.get("href")
             tmp_response = session.get(url=tmp_hospital["url_address"], headers=headers)
-            
+            print(tmp_hospital["url_address"])
             tmp_soup = BeautifulSoup(tmp_response.text, "html.parser")
             elements = tmp_soup.find_all('div', class_="spk-box__elem-head-item")
 
@@ -47,12 +52,8 @@ def get_hospitals_data() -> list:
                     text = tmp_link.get_text(strip=True)
                 else:
                     text = element.get_text(strip=True)
-                
-                if "Регион" in text:
-                    tmp_hospital["region"] = text.split(":")[1].strip()
-                elif "Район" in text:
-                    tmp_hospital["district"] = text.split(":")[1].strip()
-                elif "Город":
+            
+                if "Город":
                     tmp_hospital["city"] = text.split(":")[1].strip()
             
             content_items = tmp_soup.find_all('div', class_='spk-box__elem-content-item')
@@ -60,6 +61,46 @@ def get_hospitals_data() -> list:
                 content_text = content_item.get_text(strip=True)
                 if "Адрес" in content_text:
                     tmp_hospital["address"] = content_text.split(":")[1].strip()
+                    
+                    tmp_hospital["district"] = get_district(tmp_hospital["address"])
                     break
             hospitals.append(tmp_hospital)
     return hospitals
+
+def get_district(address: str):
+    api_key = os.getenv('YANDEX_TOKEN')
+
+    abbreviations = {
+        "Ю.":"Юных"
+    }
+
+    for key in abbreviations.keys():
+        if key in address:
+            address = address.replace(key, abbreviations[key])
+
+    headers = {
+     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
+    }
+    url = f"https://geocode-maps.yandex.ru/1.x/?apikey={api_key}&geocode={address}&format=json"
+
+    response = requests.get(url, headers=headers)
+    data = response.json()
+
+    print(url)
+
+    # Извлечение района из ответа
+    components = data["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]["metaDataProperty"]["GeocoderMetaData"]["Address"]["Components"]
+
+    district = next(
+        (item["name"] for item in components if item["kind"] == "area" and "район" in item["name"].lower()), 
+        None
+    )
+
+    if district:
+        district = district.replace("район", "")
+
+    return district
+
+
+if __name__ == "__main__":
+    get_hospitals_data()
