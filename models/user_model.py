@@ -1,7 +1,8 @@
 from sqlalchemy import Column, Date, ForeignKey, Integer, create_engine
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, aliased
 
 from db.session import get_session, Base
+from models.hospital_model import Hospital
 
 class User(Base):
     __tablename__ = "users"
@@ -52,3 +53,31 @@ def update_user_data(telegram_id, new_hospital_id=None, new_last_donation=None):
         return("Данные успешно обновлены!")
     else:
         return(f"Пользователь не найден")
+    
+def get_hospital_link(tg_id):
+    session = next(get_session())
+    result = (
+        session.query(Hospital.url_address)
+        .join(User, User.hospital_id == Hospital.id)
+        .filter(User.telegram_id == tg_id)
+        .first()
+    )
+    return result[0] if result else None
+
+def get_hospital_data(tg_id):
+    session = next(get_session())
+    result = (
+        session.query(Hospital.name, Hospital.address)
+        .join(User, User.hospital_id == Hospital.id)
+        .filter(User.telegram_id == tg_id)
+        .first()
+    )
+    if result:
+        result_dict = {
+            "name": result.name,
+            "address": result.address
+                       }
+        return result_dict
+
+if __name__ == "__main__":
+    get_hospital_data(902215935)

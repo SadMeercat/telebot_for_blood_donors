@@ -101,6 +101,56 @@ def get_district(address: str):
 
     return district
 
+def get_lights(url: str) -> dict: 
+    ua = UserAgent()
+    headers = {
+        "User-Agent": ua.random,
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+        "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+        "Referer": "https://yadonor.ru/",
+        "Cookie": "feedbackform=dsdfsf; cookieModal=1; PHPSESSID=hctnhfiqpf5bmf1unm3s56uk20; domen_name=yadonor.ru; ajax_name=yadonor.ru; ds_lk=https%3A%2F%2Fyadonor.ru%2Fperson%2F; ds_name=donorsapiens.yadonor.ru; session-cookie=17f8435fb314f8973157f2bc1e808458284e1ce1545aff6c01195308be102ce961dfb2aedd62cd8cf7f9a020b4be8970; _ym_uid=1727204536374038373; _ym_d=1727204536; _ym_isad=2; cRegion=0; special_v=no"
+    }
+
+    session = requests.Session()
+    response = session.get(url=url, headers=headers)
+
+    if response.status_code != 200:
+        print("Не удалось подключиться")
+    else:
+        soup = BeautifulSoup(response.text, "html.parser")
+        lights_div = soup.find('div', class_="spk-lights")
+        all_lights = {}
+
+        if lights_div:
+            lights = lights_div.find_all('div', class_="spk-lights__item")
+            for light in lights:
+                blood_group = ' '.join(light.find('div', class_="spk-lights__head").get_text().strip().split())
+            
+                greens = light.find_all('div', class_="spk-lights__group-item spk-lights__group-item--max")
+                yellows = light.find_all('div', class_="spk-lights__group-item spk-lights__group-item--middle")
+                reds = light.find_all('div', class_="spk-lights__group-item spk-lights__group-item--min")
+                whites = light.find_all('div', class_="spk-lights__group-item spk-lights__group-item--not")
+                grays = light.find_all('div', class_="spk-lights__group-item spk-lights__group-item--gray")
+
+                rh_s = {}
+
+                if greens:
+                    for green in greens:
+                        rh_s[' '.join(green.get_text().strip().split())] = '🟢'
+                if yellows:
+                    for yellow in yellows:
+                        rh_s[' '.join(yellow.get_text().strip().split())] = '🟡'
+                if reds:
+                    for red in reds:
+                        rh_s[' '.join(red.get_text().strip().split())] = '🔴'
+                if whites:
+                    for white in whites:
+                        rh_s[' '.join(white.get_text().strip().split())] = '⚪️'
+                if grays:
+                    for gray in grays:
+                        rh_s[' '.join(gray.get_text().strip().split())] = '❌'
+                all_lights[blood_group] = rh_s
+    return all_lights
 
 if __name__ == "__main__":
     get_hospitals_data()

@@ -38,7 +38,7 @@ def add_hospital(name, region_id, city_id, district_id, address, url_address):
         session.add(hospital)
         session.commit()
 
-def get_hospital_id(region_id, city_id, district_id, name=None):
+def get_hospital_id(city_id, district_id, name=None):
     session = next(get_session())
     if not name:
         stmt = select(Hospital.id, Hospital.name).where(Hospital.city_id == city_id, 
